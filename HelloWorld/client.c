@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     char *message = "Hello, World!";
 
     if (argc < 3) {
-        fprintf(stderr,"no hostname port\n");
+        fprintf(stderr,"no port number\n");
         return 1;
     }
 
