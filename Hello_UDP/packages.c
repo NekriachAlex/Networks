@@ -16,12 +16,25 @@ struct Package* create_packages(char* data)
     
         strncpy(current_package.packet, data + line_iterator, DATA_SIZE);
         memcpy(packeges + packetcount * sizeof(struct Package) , &current_package, sizeof(struct Package));
-        
+
         packetcount++;
         current_package.count = packetcount;
     }
 
     return  packeges;
+}
+
+int check_packets(size_t *recived, size_t count)
+{
+    
+    for(size_t package_counter; package_counter < count; package_counter++)
+    {
+        if(recived[package_counter] == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 size_t package_number(char *data)

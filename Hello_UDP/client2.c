@@ -3,12 +3,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <poll.h>
 #include "Packages.h"
 
 #define MAX_LINE_LEN 1000000
 #define MAX_PACKET_SIZE 1024
 #define PORT 8888
 #define IP "127.0.0.1"
+#define WAITING_TIME 5000
 
 int check_consistency(int* packets, size_t packet_number)
 {
@@ -61,8 +63,24 @@ int main() {
         memcpy(packages + sizeof(struct Package) * package.number, &package, sizeof(struct Package));
 
         size_t package_counter = 1;
+        struct pollfd socket;
+        memset(&socket, 0, sizeof(socket));
+        socket.events = POLLIN;
+        socket.fd = sockfd;
+        
+        int* recived = malloc(sizeof(size_t) *  package.count);
+        memset(&recived, 0, sizeof(size_t) *  package.count);
+        recived[package.count] = 1;
+        int timeout = 0;
         while(1) 
         {    
+            if((timeout = poll(&socket, 1, WAITING_TIME)) == 0)
+            {
+                if(!check_packets(recived, package.count))
+                {
+                    exit(1);
+                }
+            } 
             size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
             if(size < 0 ) 
             {
@@ -72,13 +90,15 @@ int main() {
 
             memcpy(packages + sizeof(struct Package) * package.number, &package, sizeof(struct Package));
             package_counter++;
-
+            recived[package.count] = 1;
             if(package_counter == package.count)
             {
                 break;
             }
 
         }
+        
+        for(size_t package)
     }
     
     

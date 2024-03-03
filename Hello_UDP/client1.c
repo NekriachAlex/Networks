@@ -33,7 +33,7 @@ int main()
     inet_pton(AF_INET, IP, &client_addr2.sin_addr.s_addr);
 
     struct Package* packages = create_packages(line);
-    size_t package_amount= package_count(line);
+    size_t package_amount = package_count(line);
     for(size_t package_counter = 0; package_counter < package_amount; package_counter++)
     {
         sendto(sockfd, packages + package_counter * sizeof(struct Package), sizeof(struct Package), 0, &client_addr2, sizeof(client_addr2));
