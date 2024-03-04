@@ -8,7 +8,6 @@
 #include "Packages.h"
 
 #define MAXLINELEN 1000000
-#define MAXPACKETSIZE 1024
 #define PORT 8888
 #define IP "127.0.0.1"
 
@@ -18,7 +17,7 @@ int main()
     struct sockaddr_in client_addr2;
     char line[MAXLINELEN];
 
-    if(sockfd = socket(AF_INET, SOCK_DGRAM, 0)) 
+    if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) 
     {
         perror("Socket creation failed");
         exit(1);
@@ -34,12 +33,14 @@ int main()
 
     struct Package* packages = create_packages(line);
     size_t package_amount = package_count(line);
+    printf("%d\n",packages[0].count);
+    printf("%d\n",packages[1].count);
     for(size_t package_counter = 0; package_counter < package_amount; package_counter++)
     {
         sendto(sockfd, packages + package_counter * sizeof(struct Package), sizeof(struct Package), 0, &client_addr2, sizeof(client_addr2));
     }
     
-    printf("Packets are sent");
+    printf("Packets are sent \n");
     
     close(sockfd);
     free(packages);

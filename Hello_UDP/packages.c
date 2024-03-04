@@ -2,26 +2,28 @@
 
 struct Package* create_packages(char* data)
 {
-    size_t number_of_packages = package_number(data);
+    size_t number_of_packages = package_count(data);
     
-    struct Package* packeges = (struct Package*)malloc(number_of_packages * sizeof(struct Package));
-    memset(packeges, 0, number_of_packages * sizeof(struct Package));
-    size_t packetcount = 0;
+    struct Package* packages = (struct Package*)malloc(number_of_packages * sizeof(struct Package));
+    memset(packages, 0, number_of_packages * sizeof(struct Package));
+    size_t packetcount = 1;
 
     struct Package current_package;
     current_package.count = number_of_packages;
 
     for(size_t line_iterator = 0; line_iterator < strlen(data); line_iterator += DATA_SIZE) 
     {   
-    
-        strncpy(current_package.packet, data + line_iterator, DATA_SIZE);
-        memcpy(packeges + packetcount * sizeof(struct Package) , &current_package, sizeof(struct Package));
-
+        strncpy(&(current_package.packet), data + line_iterator, DATA_SIZE);
+        current_package.number = packetcount;
+        printf("adresses [] %ld, just  %ld\n", packages[0], packages);
+        printf("calc adress %ld\n", packages + (packetcount - 1)));
+        printf("math %ld\n", sizeof(struct Package) * (packetcount - 1));
+        printf("real adress %ld\n", &packages[packetcount - 1]);
+        printf("Struct size: %ld, Real size %ld \n",sizeof(struct Package), sizeof(current_package));
+        memcpy(&packages[packetcount - 1] , &(current_package), sizeof(struct Package));
         packetcount++;
-        current_package.count = packetcount;
     }
-
-    return  packeges;
+    return  packages;
 }
 
 int check_packets(size_t *recived, size_t count)
@@ -37,7 +39,7 @@ int check_packets(size_t *recived, size_t count)
     return 1;
 }
 
-size_t package_number(char *data)
+size_t package_count(char *data)
 {
     size_t size_of_data = strlen(data);
     size_t number_of_packages = size_of_data / DATA_SIZE;
@@ -47,4 +49,16 @@ size_t package_number(char *data)
     }
 
     return number_of_packages;
+}
+
+int check_consistency(int* packets, size_t packet_number)
+{
+    for(size_t i = 0; i < packet_number; i++)
+    {
+        if(packets[i] == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
