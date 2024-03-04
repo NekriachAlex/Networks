@@ -48,14 +48,9 @@ int main() {
     printf("recived packet\n");
     if(package.count != 1)
     {
-        printf("first analysis\n");
-        printf("count = %d\n", package.count);
-        printf("packet number = %d\n", package.number);
-        printf("data = %c\n", *package.packet);
-        printf("size of package %d \n", sizeof(package));
         struct Package* packages = malloc(sizeof(struct Package) * package.count);
         memset(packages, 0, sizeof(struct Package) * package.count);
-        memcpy(packages + package.number, &(package), sizeof(struct Package));
+        memcpy(packages + (package.number - 1), &(package), sizeof(struct Package));
         size_t package_counter = 1;
 
         struct pollfd socket;
@@ -86,15 +81,10 @@ int main() {
                 exit(1);
             }
 
-            memcpy(packages + (package.number - 1), &package, sizeof(struct Package));
-            printf("i copy packet\n");
-            printf("count = %d\n", package.count);
-        printf("packet number = %d\n", package.number);
-        printf("data = %c\n", *package.packet);
-        printf("size of package %d \n", sizeof(package));
+            memcpy(&packages[package.number - 1], &package, sizeof(struct Package));
+
             package_counter++;
             recived[package.count] = 1;
-            printf("%d, %d \n",package_counter,  package.count);
             if(package_counter == package.count)
             {
                 break;
@@ -104,7 +94,8 @@ int main() {
         for(size_t package_number = 0; package_number < package.count; package_number++)
         {
             printf("try to make a line\n");
-            strncpy(line + package_number * DATA_SIZE, &(packages[package_number]).packet, DATA_SIZE);
+            strncpy(line + package_number * DATA_SIZE, (&packages[package_number])->packet, DATA_SIZE);
+            printf("line: %c \n", *((packages[package_number]).packet));
         }
     }
     else
@@ -112,7 +103,7 @@ int main() {
          printf("try to make a line fo 1 packet\n");
          strncpy(line, &(package.packet), DATA_SIZE);
     }
-    printf("%s \n", line);
+    printf("line: %s \n", line);
     
     close(sockfd);
     return 0;
