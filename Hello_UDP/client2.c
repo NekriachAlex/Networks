@@ -51,33 +51,34 @@ int main() {
         printf("first analysis\n");
         printf("count = %d\n", package.count);
         printf("packet number = %d\n", package.number);
-        printf("data = %c\n", package.packet);
+        printf("data = %c\n", *package.packet);
+        printf("size of package %d \n", sizeof(package));
         struct Package* packages = malloc(sizeof(struct Package) * package.count);
         memset(packages, 0, sizeof(struct Package) * package.count);
-        printf("after memset\n");
-       
-        memcpy(packages + sizeof(struct Package) * package.number, &package, sizeof(struct Package));
-        printf("after memcpy", package.count);
+        memcpy(packages + package.number, &(package), sizeof(struct Package));
         size_t package_counter = 1;
+
         struct pollfd socket;
         memset(&socket, 0, sizeof(socket));
         socket.events = POLLIN;
         socket.fd = sockfd;
-        
-        int* recived = malloc(sizeof(size_t) *  package.count);
-        memset(&recived, 0, sizeof(size_t) *  package.count);
+        int* recived = malloc(sizeof(size_t) * package.count);
+        memset(recived, 0, sizeof(size_t) * package.count);
         recived[package.count] = 1;
         int timeout = 0;
+
         while(1) 
         {    
             printf("im in cycle\n");
-            if((timeout = poll(&socket, 1, WAITING_TIME)) == 0)
-            {
-                if(!check_packets(recived, package.count))
-                {
-                    exit(1);
-                }
-            } 
+            // if((timeout = poll(&socket, 1, -1)) == 0)
+            // {
+            //     printf("im in poll\n");
+            //     if(!check_packets(recived, package.count))
+            //     {
+            //         printf("exit for poll\n");
+            //         exit(1);
+            //     }
+            // } 
             size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
             if(size < 0 ) 
             {
@@ -85,27 +86,31 @@ int main() {
                 exit(1);
             }
 
-            memcpy(packages + sizeof(struct Package) * (package.number - 1), &package, sizeof(struct Package));
+            memcpy(packages + (package.number - 1), &package, sizeof(struct Package));
             printf("i copy packet\n");
+            printf("count = %d\n", package.count);
+        printf("packet number = %d\n", package.number);
+        printf("data = %c\n", *package.packet);
+        printf("size of package %d \n", sizeof(package));
             package_counter++;
             recived[package.count] = 1;
+            printf("%d, %d \n",package_counter,  package.count);
             if(package_counter == package.count)
             {
                 break;
             }
 
         }
-        
         for(size_t package_number = 0; package_number < package.count; package_number++)
         {
             printf("try to make a line\n");
-            strncpy(line + package_number * DATA_SIZE, packages[package_number].packet, DATA_SIZE);
+            strncpy(line + package_number * DATA_SIZE, &(packages[package_number]).packet, DATA_SIZE);
         }
     }
     else
     {
          printf("try to make a line fo 1 packet\n");
-         strncpy(line, package.packet, DATA_SIZE);
+         strncpy(line, &(package.packet), DATA_SIZE);
     }
     printf("%s \n", line);
     

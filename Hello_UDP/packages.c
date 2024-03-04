@@ -13,14 +13,13 @@ struct Package* create_packages(char* data)
 
     for(size_t line_iterator = 0; line_iterator < strlen(data); line_iterator += DATA_SIZE) 
     {   
-        strncpy(&(current_package.packet), data + line_iterator, DATA_SIZE);
+        memcpy(current_package.packet, &data[line_iterator], DATA_SIZE);
         current_package.number = packetcount;
-        printf("adresses [] %ld, just  %ld\n", packages[0], packages);
-        printf("calc adress %ld\n", packages + (packetcount - 1)));
-        printf("math %ld\n", sizeof(struct Package) * (packetcount - 1));
-        printf("real adress %ld\n", &packages[packetcount - 1]);
-        printf("Struct size: %ld, Real size %ld \n",sizeof(struct Package), sizeof(current_package));
         memcpy(&packages[packetcount - 1] , &(current_package), sizeof(struct Package));
+        printf("count = %d\n", packages[packetcount - 1].count);
+        printf("packet number = %d\n", packages[packetcount - 1].number);
+        printf("data = %c\n", *packages[packetcount - 1].packet);
+
         packetcount++;
     }
     return  packages;
