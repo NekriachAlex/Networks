@@ -38,7 +38,7 @@ int main()
         sendto(sockfd, packages + package_counter, sizeof(struct Package), 0, &client_addr2, sizeof(client_addr2));
     }
     
-    printf("Packets are sent \n");
+    printf("Client1: Packets are sent \n");
     
     close(sockfd);
     free(packages);

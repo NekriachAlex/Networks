@@ -16,10 +16,6 @@ struct Package* create_packages(char* data)
         memcpy(current_package.packet, &data[line_iterator], DATA_SIZE);
         current_package.number = packetcount;
         memcpy(&packages[packetcount - 1] , &(current_package), sizeof(struct Package));
-        printf("count = %d\n", packages[packetcount - 1].count);
-        printf("packet number = %d\n", packages[packetcount - 1].number);
-        printf("data = %c\n", *packages[packetcount - 1].packet);
-
         packetcount++;
     }
     return  packages;

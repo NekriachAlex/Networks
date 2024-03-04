@@ -64,16 +64,13 @@ int main() {
 
         while(1) 
         {    
-            printf("im in cycle\n");
-            // if((timeout = poll(&socket, 1, -1)) == 0)
-            // {
-            //     printf("im in poll\n");
-            //     if(!check_packets(recived, package.count))
-            //     {
-            //         printf("exit for poll\n");
-            //         exit(1);
-            //     }
-            // } 
+            if((timeout = poll(&socket, 1, 1)) == 0)
+            {
+                if(!check_packets(recived, package.count))
+                {
+                    exit(1);
+                }
+            } 
             size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
             if(size < 0 ) 
             {
@@ -93,14 +90,11 @@ int main() {
         }
         for(size_t package_number = 0; package_number < package.count; package_number++)
         {
-            printf("try to make a line\n");
             strncpy(line + package_number * DATA_SIZE, (&packages[package_number])->packet, DATA_SIZE);
-            printf("line: %c \n", *((packages[package_number]).packet));
         }
     }
     else
     {
-         printf("try to make a line fo 1 packet\n");
          strncpy(line, &(package.packet), DATA_SIZE);
     }
     printf("line: %s \n", line);

@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define DATA_SIZE 1024
+#define DATA_SIZE 1
 
 struct Package
 {
@@ -12,4 +12,5 @@ struct Package
 
 struct Package* create_packages(char* data);
 int check_packets(size_t* recived, size_t count);
-size_t package_number(char* data);
+size_t package_count(char* data);
+int check_consistency(int* packets, size_t packet_number);
