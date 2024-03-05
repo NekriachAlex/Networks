@@ -1,0 +1,1 @@
+3030 stream tcp nowait root /usr/bin/nc nc -kl localhost 4040
