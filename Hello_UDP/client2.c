@@ -11,9 +11,8 @@
 #define IP "127.0.0.1"
 #define WAITING_TIME 5000
 
-
-
-int main() {
+int main()
+{
     int sockfd;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
@@ -31,74 +30,62 @@ int main() {
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr(IP);
 
+
+
     if(bind(sockfd, (const struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) 
     {
         perror("Bind failed");
         exit(1);
     }
-
-    size_t packet_count = 0;
+    //recieve packets
+    struct pollfd recieving;
+    memset(&recieving, 0, sizeof(struct pollfd));
+    recieving.fd = sockfd;
+    recieving.events = POLLIN;
     struct Package package;
-    size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
-    if(size < 0 ) 
-    {   
-        perror("Receiving failed");
-        exit(1);
-    }
-    printf("recived packet\n");
-    if(package.count != 1)
+    memset(&package, 0, sizeof(struct Package));
+
+    struct Package* packages_ptr = malloc(sizeof(struct Package)*5);
+    memset(packages_ptr, 0, sizeof(struct Package)*5);
+    struct Packages packages;
+    packages.size = 5;
+    packages.packages = packages_ptr;
+    packages.counter = 0;
+
+    while(1)
     {
-        struct Package* packages = malloc(sizeof(struct Package) * package.count);
-        memset(packages, 0, sizeof(struct Package) * package.count);
-        memcpy(packages + (package.number - 1), &(package), sizeof(struct Package));
-        size_t package_counter = 1;
-
-        struct pollfd socket;
-        memset(&socket, 0, sizeof(socket));
-        socket.events = POLLIN;
-        socket.fd = sockfd;
-        int* recived = malloc(sizeof(size_t) * package.count);
-        memset(recived, 0, sizeof(size_t) * package.count);
-        recived[package.count] = 1;
-        int timeout = 0;
-
-        while(1) 
-        {    
-            if((timeout = poll(&socket, 1, 1)) == 0)
+        int timeout = poll(&recieving, 1, 5000);
+        if(timeout == 0)
+        {
+            printf("timeout \n");
+            if(packages.counter != packages.packages[0].count)
             {
-                if(!check_packets(recived, package.count))
-                {
-                    exit(1);
-                }
-            } 
-            size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
-            if(size < 0 ) 
-            {
-                perror("Receiving failed");
+                printf("p.counter: %ld; count from first: %ld\n",packages.counter, packages.packages[0].number);
+                size_t* not_rec = not_received(&packages, packages.packages[0].count);
+                //sent this to client;
+                printf("sent this to client;");
                 exit(1);
             }
-
-            memcpy(&packages[package.number - 1], &package, sizeof(struct Package));
-
-            package_counter++;
-            recived[package.count] = 1;
-            if(package_counter == package.count)
+            if(packages.counter == packages.packages[0].count)
             {
                 break;
             }
-
         }
-        for(size_t package_number = 0; package_number < package.count; package_number++)
+        printf("before recvfrom \n");
+        size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
+        if(size < 0 )
         {
-            strncpy(line + package_number * DATA_SIZE, (&packages[package_number])->packet, DATA_SIZE);
+            perror("recvfrom error");
         }
+        
+        add_to_packages(&packages, package);
     }
-    else
-    {
-         strncpy(line, &(package.packet), DATA_SIZE);
-    }
+    for(size_t package_number = 0; package_number < packages.packages[0].count; package_number++)
+        {
+            printf("im making line \n");
+            strncpy(line + package_number * DATA_SIZE, packages.packages[package_number].packet, DATA_SIZE);
+        }
     printf("line: %s \n", line);
-    
     close(sockfd);
     return 0;
 }
