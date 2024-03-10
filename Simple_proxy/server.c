@@ -10,9 +10,34 @@
 #define PORT 3000
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 512
+#define DEST_PORT 4000
 
-void handle_client()
+
+void handle_client(struct sockaddr_in* destination_address, char* buffer, size_t readed_bytes)
 {
+    printf("handling the client\n");
+    int dest_socket = socket(AF_INET, SOCK_STREAM, 0);
+    
+    if(connect(dest_socket, destination_address, sizeof(*destination_address)) < 0)
+    {
+        printf("cant connect to the server\n");
+        return;
+    }
+
+    struct pollfd server_fd;
+    memset(&server_fd, 0, sizeof(server_fd));
+    server_fd.fd = dest_socket;
+    server_fd.events = POLLOUT;
+    int timeout = poll(&server_fd, 1, 1000);
+    if(timeout == 0)
+    {
+        printf("Cant write to the server\n");
+        return;
+    }
+
+    write(dest_socket, buffer, readed_bytes);
+    close(dest_socket);
+    printf("stop handling\n");
     return;    
 }
 
@@ -32,6 +57,13 @@ int main()
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(PORT);
+   
+    struct sockaddr_in destination_address;
+    memset(&destination_address, 0, sizeof(struct sockaddr_in));
+    destination_address.sin_family = AF_INET;
+    destination_address.sin_addr.s_addr = INADDR_ANY;
+    destination_address.sin_port = htons(DEST_PORT);
+
     
     if(bind(server_socket, (struct sockaddr*) &server_address, sizeof(server_address)) == -1)
     {
@@ -73,6 +105,7 @@ int main()
                 perror("Cant accept");
                 exit(1);
             }
+            printf("new client\n");
             clientCounter++;
             server_fds[clientCounter].fd = clientFd;
             currentSockets++;
@@ -82,19 +115,25 @@ int main()
             }
         }
 
+        poll((struct pollfd *)&server_fds[serverIsFull], currentSockets, -1);   
         for(nfds_t clientSocketNumber = 1; clientSocketNumber <= clientCounter; clientSocketNumber++)
         {
             if(server_fds[clientSocketNumber].revents & POLLIN)
             {
-                   
-                    handle_client();
+                
+                size_t readed_bytes = read(server_fds[clientSocketNumber].fd, buffer, BUFFER_SIZE);
+                if(readed_bytes == 0)
+                {
+                    printf("delete client\n");
                     close(server_fds[clientSocketNumber].fd);
                     server_fds[clientSocketNumber].fd = server_fds[clientCounter].fd;
                     server_fds[clientCounter].fd = -1;
                     clientCounter--;
                     currentSockets--;
                     serverIsFull = 0;
-                
+                    continue;
+                }
+                handle_client(&destination_address, buffer, readed_bytes);
             }
 
         }
