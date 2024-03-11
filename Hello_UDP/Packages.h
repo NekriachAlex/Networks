@@ -5,10 +5,11 @@
 
 struct Package
 {
+    char checksum;
+    char packet[DATA_SIZE];
     size_t number;
     size_t count;
-    char packet[DATA_SIZE];
-    unsigned char checksum;
+    
 };
 
 struct Packages

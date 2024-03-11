@@ -16,8 +16,7 @@ struct Package* create_packages(char* data)
     {   
         memcpy(current_package.packet, &data[line_iterator], DATA_SIZE);
         current_package.number = packetcount;
-        current_package.checksum = calculate_checksum(&current_package, sizeof(struct Package) - sizeof(unsigned char));
-        printf("sum is: %c\n", current_package.checksum);
+        current_package.checksum = calculate_checksum(&current_package.packet, DATA_SIZE);
         memcpy(&packages[packetcount - 1] , &(current_package), sizeof(struct Package));
         packetcount++;
     }
@@ -61,10 +60,12 @@ int check_consistency(int* packets, size_t packet_number)
     return 1;
 }
 
-unsigned char calculate_checksum(const void* data, size_t size) {
-    const unsigned char* ptr = (const unsigned char*)data;
-    unsigned char checksum = 1;
-    for (size_t i = 0; i < size; ++i) {
+unsigned char calculate_checksum(const void* data, size_t size)
+{
+    const unsigned char* ptr = (unsigned char*)data;
+    unsigned char checksum = 0;
+    for (size_t i = 0; i < size; ++i) 
+    {
         checksum ^= ptr[i];
     }
     return checksum;
@@ -74,23 +75,25 @@ void add_to_packages(struct Packages* packages, struct Package package)
 {
     printf("add_to_packages: starts\n");
     printf("number is: %ld\n", package.number);
-    printf("sum is %c\n", package.checksum);
-    if(!(package.checksum & calculate_checksum(&package, sizeof(struct Package) - sizeof(unsigned char))))
+   // printf("sum is %c; calculated sum is %c\n", package.checksum, calculate_checksum(&package, sizeof(struct Package) - sizeof(unsigned char)));
+    
+    if(!(package.checksum == calculate_checksum(&package.packet, DATA_SIZE)))
     {   
         printf("add_to_packages: wrong packet\n");
         return;
     }
     
-    if(packages->counter > packages->size)
+    if(packages->counter == packages->size)
     {
         printf("add_to_packages: realloc\n");
-        packages->packages = realloc(packages->packages, (packages->size)*2);
-        memcpy(&packages->packages[packages->counter], &package, sizeof(struct Package));
+        packages->packages = realloc(packages->packages, packages->size*2*sizeof(struct Package));
+        packages->size = (packages->size)*2;
+        memcpy(&(packages->packages[packages->counter]), &package, sizeof(struct Package));
     }
     else
     {
         printf("add_to_packages: simple adding\n");
-        memcpy(&packages->packages[packages->counter], &package, sizeof(struct Package));    
+        memcpy(&(packages->packages[packages->counter]), &package, sizeof(struct Package));    
     }
     (packages->counter)++;
 }

@@ -45,10 +45,10 @@ int main()
     struct Package package;
     memset(&package, 0, sizeof(struct Package));
 
-    struct Package* packages_ptr = malloc(sizeof(struct Package)*5);
-    memset(packages_ptr, 0, sizeof(struct Package)*5);
+    struct Package* packages_ptr = malloc(sizeof(struct Package)*3);
+    memset(packages_ptr, 0, sizeof(struct Package)*3);
     struct Packages packages;
-    packages.size = 5;
+    packages.size = 3;
     packages.packages = packages_ptr;
     packages.counter = 0;
 
@@ -63,8 +63,7 @@ int main()
                 printf("p.counter: %ld; count from first: %ld\n",packages.counter, packages.packages[0].number);
                 size_t* not_rec = not_received(&packages, packages.packages[0].count);
                 //sent this to client;
-                printf("sent this to client;");
-                exit(1);
+                printf("sent this to client\n");
             }
             if(packages.counter == packages.packages[0].count)
             {
@@ -81,10 +80,10 @@ int main()
         add_to_packages(&packages, package);
     }
     for(size_t package_number = 0; package_number < packages.packages[0].count; package_number++)
-        {
-            printf("im making line \n");
-            strncpy(line + package_number * DATA_SIZE, packages.packages[package_number].packet, DATA_SIZE);
-        }
+    {
+        printf("im making line \n");
+        strncpy(line + package_number * DATA_SIZE, packages.packages[package_number].packet, DATA_SIZE);
+    }
     printf("line: %s \n", line);
     close(sockfd);
     return 0;
