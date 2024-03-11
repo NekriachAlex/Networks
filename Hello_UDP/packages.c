@@ -121,29 +121,54 @@ int compare (const void * a, const void * b)
 
 void packages_sort(struct Packages* packages)
 {
-       printf("qsort\n");
-    qsort(packages, packages->counter, sizeof(struct Package), &compare);
+    printf("qsort\n");
+    printf("number of 1 pack: %ld\n", packages->packages[0].number); 
+    qsort(packages->packages, packages->counter, sizeof(struct Package), &compare);
+    printf("number of 1 pack: %ld\n", packages->packages[0].number); 
+    printf("stop sorting\n");
 }
 
 size_t* not_received(struct Packages* packages, size_t number)
 {
     printf("not_received\n");
-    size_t* not_received_packages = malloc(sizeof(size_t)*(packages->counter - number));
-    memset(not_received_packages, 0 ,packages->counter - number);
+    size_t* not_received_packages = malloc(sizeof(size_t)*(number - packages->counter));
+    printf("number %ld counter %ld \n", number, packages->counter);
+    memset(not_received_packages, 0 , number - packages->counter);
     printf("sorting\n");
     packages_sort(packages);
     size_t tmp_number = 1;
     size_t counter = 0;
+    printf("before for\n");
+    printf("counter after sort %ld\n",packages->counter);
+    printf("number of 1 pack: %ld\n", packages->packages[0].number); 
+    printf("number in if %ld, tmp is: %ld\n", packages->packages[0].count, tmp_number);
+    not_received_packages[0] = number - packages->counter;
     for(size_t iterator = 0; iterator < packages->counter; iterator++)
     {
-        printf("not_received: in for\n");
+        printf("in for\n");
         while(packages->packages[iterator].number != tmp_number)
         {
-          not_received_packages[counter] = tmp_number;
+          not_received_packages[counter + 1] = tmp_number;
           tmp_number++;
           counter++;
         }
         tmp_number++;
     }
+    tmp_number--;
+    printf("number in if %ld, tmp is: %ld\n", packages->packages[0].count, tmp_number);
+    //if we lost greater number than last
+    if(tmp_number != packages->packages[0].count)
+    {
+        
+        while(tmp_number != packages->packages[0].count)
+        {
+            tmp_number++;
+            printf("in while after if\n");
+            not_received_packages[counter + 1] = tmp_number;
+            printf("tmp number in last while %ld\n",tmp_number);
+            counter++;
+        }
+    }
+    printf("after for\n");
     return not_received_packages;
 }

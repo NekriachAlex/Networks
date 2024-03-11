@@ -8,6 +8,7 @@
 
 #define MAX_LINE_LEN 1000000
 #define PORT 8888
+#define PORT_CL1 9999
 #define IP "127.0.0.1"
 #define WAITING_TIME 5000
 
@@ -30,13 +31,18 @@ int main()
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr(IP);
 
-
-
     if(bind(sockfd, (const struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) 
     {
         perror("Bind failed");
         exit(1);
     }
+
+    int sockfd2 = socket(AF_INET, SOCK_DGRAM, 0);
+    memset(&client_addr, 0, sizeof(client_addr));
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_port = htons(PORT_CL1);
+    client_addr.sin_addr.s_addr = inet_addr(IP);
+   
     //recieve packets
     struct pollfd recieving;
     memset(&recieving, 0, sizeof(struct pollfd));
@@ -60,9 +66,12 @@ int main()
             printf("timeout \n");
             if(packages.counter != packages.packages[0].count)
             {
-                printf("p.counter: %ld; count from first: %ld\n",packages.counter, packages.packages[0].number);
+                printf("p.counter: %ld; count from first: %ld\n",packages.counter, packages.packages[0].count);
                 size_t* not_rec = not_received(&packages, packages.packages[0].count);
-                //sent this to client;
+                printf(" not rec %ld\n", not_rec[1]);
+                //sent this to client
+                size_t unsent = packages.packages[0].count - packages.counter;
+                sendto(sockfd2, not_rec, sizeof(size_t)*(packages.packages[0].count - packages.counter + 1), 0, &client_addr, sizeof(client_addr));
                 printf("sent this to client\n");
             }
             if(packages.counter == packages.packages[0].count)
@@ -71,7 +80,7 @@ int main()
             }
         }
         printf("before recvfrom \n");
-        size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, &client_addr, sizeof(client_addr));
+        size_t size = recvfrom(sockfd, &package, sizeof(struct Package), 0, NULL, sizeof(client_addr));
         if(size < 0 )
         {
             perror("recvfrom error");
